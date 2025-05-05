@@ -1,0 +1,77 @@
+
+# sentiment_analysis_social_media.py
+
+import pandas as pd
+import numpy as np
+import re
+import string
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
+nltk.download('stopwords')
+nltk.download('wordnet')
+
+# Load data (e.g., 'social_media_data.csv' with columns 'text' and 'emotion')
+data = pd.read_csv('social_media_data.csv')
+
+# Basic EDA
+print("Dataset preview:")
+print(data.head())
+print("\nClass distribution:")
+print(data['emotion'].value_counts())
+
+# Text cleaning function
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'\@\w+|\#','', text)
+    text = re.sub(r'[\d]', '', text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    tokens = text.split()
+    tokens = [w for w in tokens if w not in stopwords.words('english')]
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(w) for w in tokens]
+    return ' '.join(tokens)
+
+# Clean the text data
+data['clean_text'] = data['text'].apply(clean_text)
+
+# Vectorization
+vectorizer = TfidfVectorizer(max_features=5000)
+X = vectorizer.fit_transform(data['clean_text']).toarray()
+y = data['emotion']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Model training
+model = LogisticRegression(max_iter=200)
+model.fit(X_train, y_train)
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# Evaluation
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
+
+# Visualize confusion matrix
+plt.figure(figsize=(10, 7))
+sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, fmt='d', cmap='Blues')
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.tight_layout()
+plt.show()
