@@ -2,7 +2,7 @@ from flask import Flask, request
 from textblob import TextBlob
 import textwrap
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 @app.route('/')
 def index():
@@ -34,7 +34,6 @@ def analyze():
     polarity = blob.sentiment.polarity
     subjectivity = blob.sentiment.subjectivity
 
-    # Simple emotion mapping
     if polarity > 0.1:
         sentiment = "Positive"
         emotion = "Happy / Excited"
@@ -69,5 +68,5 @@ def analyze():
         </html>
     '''
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     app.run(debug=True)
