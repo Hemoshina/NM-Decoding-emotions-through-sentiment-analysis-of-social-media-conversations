@@ -2,7 +2,7 @@ from flask import Flask, request
 from textblob import TextBlob
 import textwrap
 
-app = Flask(__name__)
+app = Flask(__name__)  # ✅ Correct usage of __name__
 
 @app.route('/')
 def index():
@@ -68,5 +68,5 @@ def analyze():
         </html>
     '''
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # ✅ Correct usage
     app.run(debug=True)
